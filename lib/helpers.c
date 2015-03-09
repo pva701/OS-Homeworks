@@ -47,9 +47,12 @@ size_t push(struct CharQueue* q, void* bufTo, size_t count, char delimiter) {
         return 0;
     size_t pushed = 0;
     char *bufToChr = (char*)bufTo;
-    do {
-        bufToChr[pushed++] = q->data[q->l + pushed];
-    } while (pushed < count && q->data[q->l + pushed] != delimiter);
+    for (;pushed < count && q->data[q->l + pushed] != delimiter; ++pushed)
+        bufToChr[pushed] = q->data[q->l + pushed];
+    if (pushed < count) {
+        bufToChr[pushed] = q->data[q->l + pushed];
+        ++pushed;
+    }
     q->l += pushed;
     ensure(q);
     return pushed;
@@ -67,20 +70,20 @@ ssize_t read_until(int fd, void * buf, size_t count, char delimiter) {
     }
     size_t ptr = 0;
     while (ptr < count) {
-        size_t actualRead = -2;
-        if (size(q) != MAX_SIZE)
-            actualRead = read(fd, q->data + q->r, MAX_SIZE - size(q));
-        if (actualRead == 0 || actualRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK)
-            break;
-        else {
-            if (actualRead != -2) 
-                q->r += actualRead;
+        if (size(q) > 0) {
             size_t mn = size(q) < count - ptr ? size(q) : count - ptr;
             size_t pushed = push(q, buf + ptr, mn, delimiter);
             ptr += pushed;
             if (size(q) != 0)
                 break;
         }
+        size_t actualRead = -2;
+        if (size(q) != MAX_SIZE)
+            actualRead = read(fd, q->data + q->r, MAX_SIZE - size(q));
+        if (actualRead > 0)
+            q->r += actualRead;
+        if (actualRead == 0 || actualRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK)
+            break;
     }
     return ptr;
 }
