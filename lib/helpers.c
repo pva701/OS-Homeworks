@@ -28,7 +28,6 @@ ssize_t write_(int fd, void *buf, size_t count) {
     return bytesWritten;
 }    
 
-
 #define MAX_SIZE 1024
 struct CharQueue {
     char data[2 * MAX_SIZE];
@@ -44,10 +43,13 @@ void ensure(struct CharQueue* q) {
     }
 }
 size_t push(struct CharQueue* q, void* bufTo, size_t count, char delimiter) {
+    if (count == 0) 
+        return 0;
     size_t pushed = 0;
     char *bufToChr = (char*)bufTo;
-    for (; pushed < count && q->data[q->l + pushed] != delimiter; ++pushed)
-        bufToChr[pushed] = q->data[q->l + pushed];
+    do {
+        bufToChr[pushed++] = q->data[q->l + pushed];
+    } while (pushed < count && q->data[q->l + pushed] != delimiter);
     q->l += pushed;
     ensure(q);
     return pushed;
@@ -59,7 +61,7 @@ size_t size(struct CharQueue* q) {
 ssize_t read_until(int fd, void * buf, size_t count, char delimiter) {
     static struct CharQueue* q;
     if (q == NULL) {
-        q = (struct CharQueue*)malloc(sizeof (struct CharQueue));
+        q = malloc(sizeof (struct CharQueue));
         q->l = 0;
         q->r = 0;
     }
