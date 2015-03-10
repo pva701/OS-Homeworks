@@ -11,7 +11,7 @@ ssize_t read_(int fd, void *buf, size_t count) {
             break;
         if (actualRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK)
             return -1;
-        else 
+        else if (actualRead != -1)
             bytesRead += actualRead;
     }
     return bytesRead;
@@ -23,7 +23,7 @@ ssize_t write_(int fd, void *buf, size_t count) {
         ssize_t actualWritten = write(fd, buf + bytesWritten, count - bytesWritten);
         if (actualWritten == -1 && errno != EAGAIN && errno != EWOULDBLOCK)
             return -1;
-        else 
+        else if (actualWritten != -1)
             bytesWritten += actualWritten;
     }
     return bytesWritten;
