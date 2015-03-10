@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 const size_t SIZE_BUFFER = 1024;
-
+//Yan privet!
 int main() {
     char buf[SIZE_BUFFER];
     while (1) {
