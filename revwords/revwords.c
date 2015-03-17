@@ -16,8 +16,8 @@ void reverse(char* beg, char* end) {
 int main() {
     char word[MAX_LEN_WORD];
     while (1) {
-        size_t bytes = read_until(STDIN_FILENO, word, MAX_LEN_WORD, DELIMITER);
-        if (bytes == 0)
+        ssize_t bytes = read_until(STDIN_FILENO, word, MAX_LEN_WORD, DELIMITER);
+        if (bytes == 0 || bytes == -1)
             break;
         if (word[bytes - 1] == DELIMITER) {
             reverse(word, word + bytes - 1);
