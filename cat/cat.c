@@ -14,7 +14,9 @@ int main() {
             fprintf(stderr, "error");
             return 0;
         }
-        write_(STDOUT_FILENO, buf, bytes);
+        bytes = write_(STDOUT_FILENO, buf, bytes);
+        if (bytes == -1)
+            break;
     }
     return 0;
 }
