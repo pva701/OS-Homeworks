@@ -11,12 +11,12 @@ int main() {
         if (bytes == 0)
             break;
         if (bytes == -1) {
-            fprintf(stderr, "error");
-            return 0;
+            write_(STDERR_FILENO, "error", 5);
+            return -1;
         }
         bytes = write_(STDOUT_FILENO, buf, bytes);
         if (bytes == -1)
-            break;
+            return -1;
     }
     return 0;
 }
