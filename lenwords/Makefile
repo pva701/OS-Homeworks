@@ -1,0 +1,12 @@
+CC = gcc
+
+all: lenwords
+
+lenwords: libhelpers.so
+	$(CC) lenwords.c -L../lib -I../lib -Wl,-rpath=../lib -lhelpers -o lenwords
+libhelpers.so: ../lib
+	$(MAKE) -C $<
+clean:
+	$(MAKE) -C ../lib clean
+	rm -f lenwords
+
