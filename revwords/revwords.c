@@ -19,14 +19,17 @@ int main() {
         ssize_t bytes = read_until(STDIN_FILENO, word, MAX_LEN_WORD, DELIMITER);
         if (bytes == 0 || bytes == -1)
             break;
+        ssize_t error;
         if (word[bytes - 1] == DELIMITER) {
             reverse(word, word + bytes - 1);
             write_(STDOUT_FILENO, word, bytes - 1);
-            write_(STDOUT_FILENO, word + bytes - 1, 1);
+            error = write_(STDOUT_FILENO, word + bytes - 1, 1);
         } else {
             reverse(word, word + bytes);
-            write_(STDOUT_FILENO, word, bytes);
+            error = write_(STDOUT_FILENO, word, bytes);
         }
+        if (error == -1)
+            return -1;
     }
     return 0;
 }

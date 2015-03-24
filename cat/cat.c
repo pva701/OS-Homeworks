@@ -8,12 +8,8 @@ int main() {
     char buf[SIZE_BUFFER];
     while (1) {
         ssize_t bytes = read_(STDIN_FILENO, buf, SIZE_BUFFER);
-        if (bytes == 0)
+        if (bytes == 0 || bytes == -1)
             break;
-        if (bytes == -1) {
-            fprintf(stderr, "error");
-            return 0;
-        }
         bytes = write_(STDOUT_FILENO, buf, bytes);
         if (bytes == -1)
             break;
