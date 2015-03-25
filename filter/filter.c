@@ -15,16 +15,20 @@ int main(int argc, char* argv[]) {
     const char* file = newArgs[0];
     while (1) {
         ssize_t len = read_until(STDIN_FILENO, word, MAX_LEN_WORD, '\n');
+        size_t last = len;
         if (len == 0 || len == -1)
             break;
-        if (word[len - 1] == '\n')
+        if (word[len - 1] == '\n') {
             word[len - 1] = 0;
-        else
+            last--;
+        } else 
             word[len] = 0;
         newArgs[argc - 1] = word;
         newArgs[argc] = NULL;
-        if (spawn(file, newArgs) == 0) 
-            printf("%s\n", word);
+        if (spawn(file, newArgs) == 0) {
+            word[last] = '\n';
+            write_(STDOUT_FILENO, word, last + 1);
+        }
     }
     free(newArgs);
     return 0;
