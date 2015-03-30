@@ -26,6 +26,7 @@ size_t buf_size(struct buf_t* buf) {
 ssize_t buf_fill(fd_t fd, struct buf_t *buf, size_t required) {
     assert(buf != NULL);
     assert(required <= buf->capacity);
+    buf->size = 0;//TODO uncomment if it requested
     while (buf->size < required) {
         ssize_t bytes = read(fd, buf->data + buf->size, buf->capacity - buf->size);
         if (bytes == -1)
@@ -39,9 +40,8 @@ ssize_t buf_fill(fd_t fd, struct buf_t *buf, size_t required) {
 
 ssize_t buf_flush(fd_t fd, struct buf_t *buf, size_t required) {
     assert(buf != NULL);
-    assert(buf->size >= required);
     size_t prevSize = buf->size;
-    while (prevSize - buf->size < required) {
+    while (prevSize - buf->size < required && buf->size != 0) {
         ssize_t bytes = write(fd, buf->data, buf->size);
         if (bytes == -1)
             return -1;
