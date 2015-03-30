@@ -30,6 +30,8 @@ ssize_t buf_fill(fd_t fd, struct buf_t *buf, size_t required) {
         ssize_t bytes = read(fd, buf->data + buf->size, buf->capacity - buf->size);
         if (bytes == -1)
             return -1;
+        if (bytes == 0)
+            break;
         buf->size += bytes;
     }
     return buf->size;
@@ -43,6 +45,8 @@ ssize_t buf_flush(fd_t fd, struct buf_t *buf, size_t required) {
         ssize_t bytes = write(fd, buf->data, buf->size);
         if (bytes == -1)
             return -1;
+        if (bytes == 0)
+            break;
         buf->size -= bytes;
         memmove(buf->data, buf->data + bytes, buf->size);
     }
