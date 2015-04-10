@@ -88,7 +88,6 @@ ssize_t read_until(int fd, void * buf, size_t count, char delimiter) {
     }
     return ptr;
 }
-
 int spawn(const char * file, char * const argv []) {
     int proc = fork();
     if (proc != 0) {//in parent process
