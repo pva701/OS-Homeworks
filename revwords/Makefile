@@ -8,6 +8,5 @@ revwords: libhelpers.so
 libhelpers.so: ../lib
 	$(MAKE) -C $<
 clean:
-	$(MAKE) -C ../lib clean
 	rm -f revwords
 
