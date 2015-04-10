@@ -18,9 +18,9 @@ int main(int argc, char* argv[]) {
     while (1) {
         ssize_t len = buf_getline(STDIN_FILENO, buf, word);
         int i = 0;
-        if (len == 0 || len == -1)
+        if (len == -1 || len == 0)
             break;
-        if (len % 2 == 1)
+        if (len % 2 == 0)
             continue;
         word[len] = 0;
         newArgs[argc - 1] = word;
