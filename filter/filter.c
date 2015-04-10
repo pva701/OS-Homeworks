@@ -15,6 +15,7 @@ int main(int argc, char* argv[]) {
     const char* file = newArgs[0];
     while (1) {
         ssize_t len = read_until(STDIN_FILENO, word, MAX_LEN_WORD, '\n');
+        printf("len = %d\n", len);
         size_t last = len;
         if (len == 0 || len == -1)
             break;
@@ -25,7 +26,9 @@ int main(int argc, char* argv[]) {
             word[len] = 0;
         newArgs[argc - 1] = word;
         newArgs[argc] = NULL;
-        if (spawn(file, newArgs) == 0) {
+        int sp = spawn(file, newArgs);
+        printf("sp = %d\n", sp);
+        if (sp == 0) {
             word[last] = '\n';
             ssize_t er = write_(STDOUT_FILENO, word, last + 1);
             if (er == -1)

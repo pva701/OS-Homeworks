@@ -17,13 +17,16 @@ int main(int argc, char* argv[]) {
     struct buf_t *buf = buf_new(MAX_BUF_SIZE);
     while (1) {
         ssize_t len = buf_getline(STDIN_FILENO, buf, word);
+        printf("len = %d\n", len);
         if (len == 0 || len == -1)
             break;
         if (len % 2 == 1)
             continue;
         newArgs[argc - 1] = word;
         newArgs[argc] = NULL;
-        if (spawn(file, newArgs) == 0) {
+        int sp = spawn(file, newArgs);
+        printf("sp = %d\n", sp);
+        if (sp == 0) {
             word[len] = '\n';
             ssize_t er = write_(STDOUT_FILENO, word, len + 1);
             if (er == -1)
