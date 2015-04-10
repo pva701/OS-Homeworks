@@ -2,10 +2,8 @@ CC = gcc
 
 all: filter
 
-filter: libhelpers.so
+filter: filter.c
 	$(CC) filter.c -L../lib -I../lib -Wl,-rpath=../lib -lhelpers -o filter 
-libhelpers.so: ../lib
-	$(MAKE) -C $<
 clean:
 	$(MAKE) -C ../lib clean
 	rm -f filter

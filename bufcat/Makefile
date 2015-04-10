@@ -2,10 +2,8 @@ CC = gcc
 
 all: bufcat
 
-bufcat: libbufio.so
+bufcat: bufcat.c
 	$(CC) bufcat.c -L../lib -I../lib -Wl,-rpath=../lib -lbufio -o bufcat
-libbufio.so: ../lib
-	$(MAKE) -C $<
 clean:
 	$(MAKE) -C ../lib clean
 	rm -f bufcat
