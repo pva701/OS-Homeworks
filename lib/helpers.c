@@ -63,6 +63,8 @@ size_t size(struct CharQueue* q) {
 }
 
 ssize_t read_until(int fd, void * buf, size_t count, char delimiter) {
+    if (count == 0)
+        return 0;
     static struct CharQueue* q;
     if (q == NULL) {
         q = malloc(sizeof (struct CharQueue));
@@ -70,21 +72,29 @@ ssize_t read_until(int fd, void * buf, size_t count, char delimiter) {
         q->r = 0;
     }
     size_t ptr = 0;
-    while (ptr < count) {
-        if (size(q) > 0) {
-            size_t mn = size(q) < count - ptr ? size(q) : count - ptr;
-            size_t pushed = push(q, buf + ptr, mn, delimiter);
-            ptr += pushed;
-            if (size(q) != 0)
-                break;
-        }
+    int hasDelimiter = 0;
+    char *bufToChr = (char*)buf;
+    if (size(q) > 0) {
+        size_t mn = size(q) < count - ptr ? size(q) : count - ptr;
+        size_t pushed = push(q, buf + ptr, mn, delimiter);
+        ptr += pushed;
+        if (bufToChr[ptr - 1] == delimiter) hasDelimiter = 1;
+    }
+
+    while (ptr < count && !hasDelimiter) {
         size_t actualRead = -2;
-        if (size(q) != MAX_SIZE)
+        if (size(q) != MAX_SIZE) 
             actualRead = read(fd, q->data + q->r, MAX_SIZE - size(q));
         if (actualRead > 0)
             q->r += actualRead;
         if (actualRead == 0 || actualRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK)
             break;
+        if (size(q) > 0) {
+            size_t mn = size(q) < count - ptr ? size(q) : count - ptr;
+            size_t pushed = push(q, buf + ptr, mn, delimiter);
+            ptr += pushed;
+            if (bufToChr[ptr - 1] == delimiter) hasDelimiter = 1;
+        }
     }
     return ptr;
 }
