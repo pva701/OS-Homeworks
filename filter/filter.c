@@ -27,7 +27,9 @@ int main(int argc, char* argv[]) {
         newArgs[argc] = NULL;
         if (spawn(file, newArgs) == 0) {
             word[last] = '\n';
-            write_(STDOUT_FILENO, word, last + 1);
+            ssize_t er = write_(STDOUT_FILENO, word, last + 1);
+            if (er == -1)
+                break;
         }
     }
     free(newArgs);
