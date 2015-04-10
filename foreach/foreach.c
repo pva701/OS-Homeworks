@@ -8,7 +8,7 @@ const size_t MAX_BUF_SIZE = MAX_LEN_WORD  + 1;
 int main(int argc, char* argv[]) {
     if (argc == 0)
         return 0;
-    char word[MAX_LEN_WORD + 1];
+    char word[MAX_LEN_WORD + 1] = {0};
     char* *const newArgs = malloc(sizeof(char*) * (argc + 1));
     size_t i;
     for (i = 0; i < argc - 1; ++i)
