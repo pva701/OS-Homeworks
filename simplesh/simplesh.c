@@ -10,10 +10,12 @@ void dollar() {
     write(STDOUT_FILENO, "$ ", 3);
 }
 
+
 void sigHandler(int sig) {
-    if (sig == SIGINT) 
-        kill(0, SIGINT);
-    else if (sig == SIGQUIT) {
+    if (sig == SIGINT) {
+        write(STDOUT_FILENO, "Interrupted\n", 12);
+        dollar();
+    } else if (sig == SIGQUIT) {
         kill(0, SIGINT);
         exit(0);
     }
