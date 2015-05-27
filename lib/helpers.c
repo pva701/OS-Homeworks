@@ -2,6 +2,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
 
 ssize_t read_(int fd, void *buf, size_t count) {
     ssize_t bytesRead = 0;
@@ -98,6 +101,7 @@ ssize_t read_until(int fd, void * buf, size_t count, char delimiter) {
     }
     return ptr;
 }
+
 int spawn(const char * file, char * const argv []) {
     int proc = fork();
     if (proc != 0) {//in parent process
@@ -111,4 +115,94 @@ int spawn(const char * file, char * const argv []) {
         close(fd);
         return execvp(file, argv);
     }
+}
+
+struct execargs_t* new_execargs_t_from_string(const char* l, const char* r) {
+    int args = 0;
+    const char* i = l;
+    for (; i < r; ++i) 
+        if (*i != ' ') {
+            while (i < r && *i != ' ') ++i;
+            args++;
+        }
+    const char** a = malloc(args - 1);
+    const char* file;
+    i = l;
+    args = 0;
+    for (; i < r; ++i)
+        if (*i != ' ') {
+            const char *j = i;
+            while (i < r && *i != ' ') ++i;
+            const char *str = strndup(j, i - j);
+            if (args == 0) file = str;
+            else a[args - 1] = str;
+            args++;
+        }
+    return new_execargs_t(file, a, args - 1);
+}
+
+struct execargs_t* new_execargs_t(const char* file,  const char* argv[], int nArgs) {
+    struct execargs_t* program;
+    program  = malloc(sizeof (struct execargs_t));
+    program->file = file;
+    program->args = malloc(nArgs + 2);
+    program->args[nArgs + 1] = NULL;
+    program->args[0] = file;
+    size_t i = 1;
+    for (; i <= nArgs; ++i)
+        program->args[i] = argv[i - 1];
+    return program;
+}
+
+int exec(struct execargs_t* program) {
+    int proc = fork();
+    if (proc != 0) {//in parent process
+        int res;
+        waitpid(proc, &res, 0);
+        return res;
+    } else //in child process
+        return execvp(program->file, (char*const*)program->args);
+}
+
+#define fp fprintf
+
+int resultFd;
+int runpiped(struct execargs_t** programs, size_t n) {
+    int prevOutput = -1;
+    //1 - for write
+    //0 - for read
+    ssize_t i = 0;
+    for (; i < n; ++i) {
+        int pipefd[2];
+        int er = pipe(pipefd);
+        if (er == -1) {
+            kill(0, SIGINT);
+            return -1;
+        }
+        int childId = fork();
+        if (childId == -1) {
+            kill(0, SIGINT);
+            return -1;
+        } 
+        if (childId != 0) {//in par proc 
+            close(pipefd[1]);
+            if (prevOutput != -1) close(prevOutput);
+            prevOutput = pipefd[0];
+        } else {//in child
+            close(pipefd[0]);
+            dup2(pipefd[1], STDOUT_FILENO);
+            if (prevOutput != -1) {
+                dup2(prevOutput, STDIN_FILENO);
+                close(prevOutput);
+            }
+            exit(execvp(programs[i]->file, (char*const*)programs[i]->args));
+        }
+   }
+   int res;
+   waitpid(0, &res, 0);
+   //fprintf(stderr, "res = %d\n", res);
+   if (res != 0) return -1;
+   //printf("sigint = %d\n", _wasSigInt);
+   resultFd = prevOutput;
+   return 0;
 }
