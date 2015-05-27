@@ -67,3 +67,26 @@ ssize_t buf_flush(fd_t fd, struct buf_t *buf, size_t required) {
     return prevSize - buf->size;
 }
 
+ssize_t buf_getline(fd_t fd, struct buf_t *buf, char* dest) {
+    ssize_t lenRet = 0;
+    while (1) {
+        size_t pos = 0;
+        while (pos < buf->size && buf->data[pos] != '\n')
+            dest[lenRet++] = buf->data[pos++];
+        if (pos == buf->size) {
+            ssize_t bytes = buf_fill(fd, buf, 1);
+            if (bytes == -1)
+                return -1;
+            else if (bytes == 0)
+                break;
+        } else {
+            ++lenRet;
+            ++pos;
+            buf->size -= pos;
+            memmove(buf->data, buf->data + pos, buf->size);
+            break;
+        }
+    }
+    return lenRet;
+}
+
