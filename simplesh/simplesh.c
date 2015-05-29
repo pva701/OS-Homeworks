@@ -12,16 +12,13 @@ void dollar() {
 
 
 void sigHandler(int sig) {
-    if (sig == SIGINT) 
-        write(STDOUT_FILENO, "Interrupted\n", 12);
-    else if (sig == SIGQUIT) {
+    if (sig == SIGQUIT) {
         kill(0, SIGINT);
         exit(0);
     }
 }
 
 int main() {
-    signal(SIGINT, sigHandler);
     signal(SIGQUIT, sigHandler);
     struct buf_t *buffer = buf_new(MAX_BUF_SIZE);
     dollar();
