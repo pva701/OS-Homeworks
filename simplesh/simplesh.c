@@ -10,16 +10,12 @@ void dollar() {
     write(STDOUT_FILENO, "$ ", 3);
 }
 
-
 void sigHandler(int sig) {
-    if (sig == SIGQUIT) {
-        kill(0, SIGINT);
-        exit(0);
-    }
+    dollar();
 }
 
 int main() {
-    signal(SIGQUIT, sigHandler);
+    signal(SIGINT, sigHandler);
     struct buf_t *buffer = buf_new(MAX_BUF_SIZE);
     dollar();
     while (1) {
@@ -51,14 +47,14 @@ int main() {
             ++cntProgs;
         }
         int er = runpiped(progs, cntProgs);
-        if (er == 0) {
+/*        if (er == 0) {
             while (1) {
                 bytes = read(resultFd, line, MAX_BUF_SIZE);
                 if (bytes == 0) break;
                 write(STDIN_FILENO, line, bytes);
             }
             close(resultFd);
-        }
+        }*/
         dollar();
     }
     return 0;
