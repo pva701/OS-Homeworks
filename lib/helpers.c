@@ -136,14 +136,11 @@ struct execargs_t* new_execargs_t_from_string(const char* l, const char* r) {
         if (*i != ' ') {
             const char *j = i;
             while (i < r && *i != ' ') ++i;
-            fprintf(stderr, "sz = %d\n", i - j);
             const char *str = strndup(j, i - j);
             if (args == 0) file = str;
             else a[args - 1] = str;
             args++;
-            fprintf(stderr, "arg = %d\n", args);
         }
-    fprintf(stderr, "END\n");
     return new_execargs_t(file, a, args - 1);
 }
 
