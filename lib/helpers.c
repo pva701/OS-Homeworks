@@ -125,7 +125,10 @@ struct execargs_t* new_execargs_t_from_string(const char* l, const char* r) {
             while (i < r && *i != ' ') ++i;
             args++;
         }
-    const char** a = malloc(args - 1);
+    if (args == 0) return NULL;
+    const char** a = NULL;
+    if (args > 1)
+        a = malloc(args - 1);
     const char* file;
     i = l;
     args = 0;
@@ -133,11 +136,14 @@ struct execargs_t* new_execargs_t_from_string(const char* l, const char* r) {
         if (*i != ' ') {
             const char *j = i;
             while (i < r && *i != ' ') ++i;
+            fprintf(stderr, "sz = %d\n", i - j);
             const char *str = strndup(j, i - j);
             if (args == 0) file = str;
             else a[args - 1] = str;
             args++;
+            fprintf(stderr, "arg = %d\n", args);
         }
+    fprintf(stderr, "END\n");
     return new_execargs_t(file, a, args - 1);
 }
 
@@ -145,10 +151,10 @@ struct execargs_t* new_execargs_t(const char* file,  const char* argv[], int nAr
     struct execargs_t* program;
     program  = malloc(sizeof (struct execargs_t));
     program->file = file;
-    program->args = malloc(nArgs + 2);
+    program->args = malloc((nArgs + 2) * sizeof(const char*));
     program->args[nArgs + 1] = NULL;
     program->args[0] = file;
-    size_t i = 1;
+    int i = 1;
     for (; i <= nArgs; ++i)
         program->args[i] = argv[i - 1];
     return program;

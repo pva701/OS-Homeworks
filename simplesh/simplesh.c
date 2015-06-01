@@ -46,15 +46,15 @@ int main() {
             ++i;
             ++cntProgs;
         }
-        int er = runpiped(progs, cntProgs);
-/*        if (er == 0) {
-            while (1) {
-                bytes = read(resultFd, line, MAX_BUF_SIZE);
-                if (bytes == 0) break;
-                write(STDIN_FILENO, line, bytes);
-            }
-            close(resultFd);
-        }*/
+        i = 0;
+        int er = 0;
+        for (; i < cntProgs; ++i)
+            if (progs[i] == NULL) er = 1;
+        if (!er) {
+            er = runpiped(progs, cntProgs);
+            if (er != 0) write(STDOUT_FILENO, "Error run\n", 10);
+        } else
+            write(STDOUT_FILENO, "Error\n", 6);
         dollar();
     }
     return 0;
