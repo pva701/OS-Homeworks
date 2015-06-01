@@ -164,15 +164,21 @@ int exec(struct execargs_t* program) {
         return execvp(program->file, (char*const*)program->args);
 }
 
-#define fp fprintf
+int _wasSigInt;
+void sigHandler(int sig) {
+    _wasSigInt = 1;
+}
 
 int resultFd;
 int runpiped(struct execargs_t** programs, size_t n) {
+    resultFd = -1;
+    _wasSigInt = 0;
+    signal(SIGINT, sigHandler);
     int prevOutput = -1;
     //1 - for write
     //0 - for read
     ssize_t i = 0;
-    for (; i < n; ++i) {
+    for (; i < n && !_wasSigInt; ++i) {
         int pipefd[2];
         int er = pipe(pipefd);
         if (er == -1) {
@@ -191,18 +197,23 @@ int runpiped(struct execargs_t** programs, size_t n) {
         } else {//in child
             close(pipefd[0]);
             dup2(pipefd[1], STDOUT_FILENO);
+            close(pipefd[1]);
             if (prevOutput != -1) {
                 dup2(prevOutput, STDIN_FILENO);
                 close(prevOutput);
             }
-            exit(execvp(programs[i]->file, (char*const*)programs[i]->args));
+            if (!_wasSigInt) exit(execvp(programs[i]->file, (char*const*)programs[i]->args));
         }
-   }
-   int res;
-   waitpid(0, &res, 0);
-   //fprintf(stderr, "res = %d\n", res);
-   if (res != 0) return -1;
-   //printf("sigint = %d\n", _wasSigInt);
-   resultFd = prevOutput;
-   return 0;
+    }
+    if (_wasSigInt) return 0;
+    int error = 0;
+    while (1) {
+        int status;
+        pid_t done = wait(&status);
+        if (done == -1 && errno == ECHILD) break;
+        else if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) error = 1;
+    }
+    if (error != 0) return -1;
+    resultFd = prevOutput;
+    return 0;
 }
