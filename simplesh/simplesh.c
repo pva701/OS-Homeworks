@@ -11,6 +11,7 @@ void dollar() {
 }
 
 void sigHandler(int sig) {
+    printf("sighandler\n");
     dollar();
 }
 
