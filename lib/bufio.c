@@ -40,7 +40,6 @@ size_t buf_size(struct buf_t* buf) {
 ssize_t buf_fill(fd_t fd, struct buf_t *buf, size_t required) {
     myAssert(buf != NULL);
     myAssert(required <= buf->capacity);
-    buf->size = 0;
     while (buf->size < required) {
         ssize_t bytes = read(fd, buf->data + buf->size, buf->capacity - buf->size);
         if (bytes == -1)
