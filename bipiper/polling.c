@@ -79,7 +79,6 @@ int main(int argc, char* argv[]) {
     int fd1 = -1, fd2 = -1;
     while (1) {
         poll(pollf, numConnection, -1);
-        fprintf(stderr, "now here\n");
         for (int i = 0; i < numConnection; ++i)
             if (pollf[i].revents & POLLIN) {
                 if (i == 0)
@@ -103,6 +102,12 @@ int main(int argc, char* argv[]) {
             } else if (pollf[i].revents & POLLOUT) {
                 buf_flush(pollf[i].fd, buffers[i^1], buffers[i^1]->size);
                 pollf[i].events = (!closed[i] ? POLLIN : 0);
+            } else if (pollf[i].revents & POLLHUP) {
+                shutdown(fd1, SHUT_RD);
+                closed[i] = 1;
+                pollf[i].events = 0;
+                if (i&1) checkClose(i - 1);
+                else checkClose(i);
             } else if (pollf[i].revents & EINTR) {
                 shutdown(fd1, SHUT_RD);
                 closed[i] = 1;
@@ -127,6 +132,5 @@ int main(int argc, char* argv[]) {
                 fd1 = fd2 = -1;
             }
     }
-
     return 0;
 }

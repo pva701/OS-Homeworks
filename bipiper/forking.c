@@ -26,7 +26,7 @@ int startServer(int port) {
     return sock;
 }
 
-#define MAX_SIZE_BUFFER 4096
+#define MAX_SIZE_BUFFER 64 * 1024
 #define MAX_SIZE_CONNECTION 1024*64
 
 struct buf_t* buf; 
@@ -34,10 +34,10 @@ char str[MAX_SIZE_BUFFER + 1];
 
 void pipedWrite(int fd1, int fd2) {
     while (1) {
-        ssize_t rb = buf_getline(fd1, buf, str);
+        ssize_t rb = read(fd1, str, MAX_SIZE_BUFFER);
         if (rb <= 0) break;
         str[rb] = '\n';
-        write(fd2, str, rb + 1);
+        ssize_t bytes = write(fd2, str, rb + 1);
     }
     close(fd1);
     close(fd2);
