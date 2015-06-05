@@ -46,7 +46,6 @@ void myAccept(int sock, int* fd) {
 #define swap(type, i, j) {type t = i; i = j; j = t;}//zbs, nah
 
 void checkClose(int i) {
-    fprintf(stderr, "check close %d %d\n", closed[i], closed[i + 1]);
     if (closed[i] && closed[i + 1]) {
         close(pollf[i].fd);
         close(pollf[i + 1].fd);
@@ -87,12 +86,9 @@ int main(int argc, char* argv[]) {
                 else if (i == 1)
                     myAccept(1, &fd2);
                 else {
-                    //fprintf(stderr, "NOW READ %d fd = %d\n", i, pollf[i].fd);
                     struct buf_t* buf = buffers[i];
                     int prevSize = buf->size;
                     int bytes = buf_fill(pollf[i].fd, buf, buf->size + 1);
-                    //fprintf(stderr, " bytes = %d", bytes);
-                    fprintf(stderr, "prev sz = %d\n", prevSize);
                     if (prevSize == bytes) {
                         shutdown(fd1, SHUT_RD);
                         closed[i] = 1;
@@ -104,11 +100,15 @@ int main(int argc, char* argv[]) {
                          pollf[i^1].events = POLLOUT;
                 }
             } else if (pollf[i].revents & POLLOUT) {
-                //fprintf(stderr, "out %d\n", i);
                 buf_flush(pollf[i].fd, buffers[i^1], buffers[i^1]->size);
                 pollf[i].events = (!closed[i] ? POLLIN : 0);
+            } else if (pollf[i].revents & EINTR) {
+                shutdown(fd1, SHUT_RD);
+                closed[i] = 1;
+                pollf[i].events = 0;
+                if (i&1) checkClose(i - 1);
+                else checkClose(i);
             }
-            printf("fd %d %d\n", fd1, fd2);
 
             if (fd1 != -1 && fd2 != -1) {
                 pollf[numConnection].fd = fd1;
