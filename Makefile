@@ -1,4 +1,4 @@
-SUBDIRS = lib cat revwords filter bufcat polling bipiper filesender
+SUBDIRS = lib cat revwords filter bufcat bipiper filesender
 
 all: $(SUBDIRS)
 $(SUBDIRS):
@@ -15,4 +15,3 @@ clean:
 	$(MAKE) -C $(CURDIR)/simplesh clean
 	$(MAKE) -C $(CURDIR)/bipiper clean
 	$(MAKE) -C $(CURDIR)/filesender clean
-	$(MAKE) -C $(CURDIR)/polling clean

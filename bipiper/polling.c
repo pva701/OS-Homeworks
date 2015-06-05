@@ -79,6 +79,7 @@ int main(int argc, char* argv[]) {
     int fd1 = -1, fd2 = -1;
     while (1) {
         poll(pollf, numConnection, -1);
+        fprintf(stderr, "now here\n");
         for (int i = 0; i < numConnection; ++i)
             if (pollf[i].revents & POLLIN) {
                 if (i == 0)
