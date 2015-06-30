@@ -88,8 +88,10 @@ int main(int argc, char* argv[]) {
                 else {
                     struct buf_t* buf = buffers[i];
                     int prevSize = buf->size;
-                    int bytes = buf_fill(pollf[i].fd, buf, buf->size + 1);
-                    if (prevSize == bytes) {
+                    int bytes = read(pollf[i].fd, buf->data + buf->size, buf->capacity - buf->size);
+//                    fprintf(stderr, "read = %d\n", bytes);
+                    buf->size += bytes;
+                    if (prevSize == buf->size && buf->capacity != prevSize) {
                         shutdown(fd1, SHUT_RD);
                         closed[i] = 1;
                         pollf[i].events = 0;
@@ -100,7 +102,9 @@ int main(int argc, char* argv[]) {
                          pollf[i^1].events = POLLOUT;
                 }
             } else if (pollf[i].revents & POLLOUT) {
-                buf_flush(pollf[i].fd, buffers[i^1], buffers[i^1]->size);
+                int bytes = write(pollf[i].fd, buffers[i^1]->data, buffers[i^1]->size);
+//                fprintf(stderr, "byte = %d\n", bytes);
+                buffers[i^1]->size -= bytes;
                 pollf[i].events = (!closed[i] ? POLLIN : 0);
             } else if (pollf[i].revents & POLLHUP) {
                 shutdown(fd1, SHUT_RD);
